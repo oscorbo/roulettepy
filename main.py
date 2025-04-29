@@ -1,6 +1,7 @@
 import pyglet
 from pyglet.window import key
 from pyglet.window import mouse
+import random
 import data
 import math
 import os
@@ -15,7 +16,6 @@ window.maximize()
 
 Batch = pyglet.graphics.Batch()
 
-# Impact
 ball = pyglet.shapes.Circle(radius=10, x=data.center_x, y=data.center_y, batch=Batch)
 path = os.path.join(script_dir, 'images/newrulet.png')
 
@@ -23,11 +23,19 @@ ruletimage = pyglet.image.load(path)
 ruletimage.anchor_x = ruletimage.width // 2
 ruletimage.anchor_y = ruletimage.height // 2
 
-#ruletimage.anchor_y = 100
-
 rulet = pyglet.sprite.Sprite(img=ruletimage, x=data.center_x, y=data.center_y, batch=Batch)
 rulet.scale = .5
 
+path = os.path.join(script_dir, 'images/deccider.png')
+selectorimage = pyglet.image.load(path)
+selectorimage.anchor_x = selectorimage.width // 2
+selectorimage.anchor_y = selectorimage.height // 2
+
+selector = pyglet.sprite.Sprite(img=selectorimage, x=data.center_x, y=data.center_y, batch=Batch)
+selector.scale = .5
+selector.opacity = 100
+
+# Impact
 label = pyglet.text.Label("osco game",
                           font_name='Times New Roman',
                           font_size=13,
@@ -44,28 +52,29 @@ bit_of_chance = 360/len(chances)
 # -.05
 deacceleration_ball = -.05
 # -20
-angle_speed_ball = 0
+multi = random.random()
+print(multi)
+angle_speed_ball = -7 * multi
 angle_ball_teoric = bit_of_chance / 3
 angle_ball_real = bit_of_chance / 3
 
 deacceleration_rulet = 0.1
-angle_speed_rulet = 8
+angle_speed_rulet = 2
 
 
 @window.event
 def on_key_press(symbol, modifiers):
     global angle_speed_ball, angle_ball_real, angle_ball_teoric
 
-    if symbol == key.U:
+    if symbol == key.Y:
         angle_speed_ball = 0
-        index = int(angle_ball_teoric/bit_of_chance - .7)
+        index = int((angle_ball_teoric + 360 + (0 * bit_of_chance / 3))/bit_of_chance)
         angle_ball_real = index * bit_of_chance + rulet.rotation + bit_of_chance / 3
         print(angle_ball_teoric, index, chances[index])
-
-    if symbol == key.T:
-        angle_speed_ball = 0
-        index = int(angle_ball_teoric/bit_of_chance - .7)
-        print(angle_ball_teoric, index, chances[index])
+        selector.opacity = 150
+    
+    if symbol == key.I:
+        angle_speed_ball = -7 * random.random()
 
 # region mouse
 @window.event
@@ -96,6 +105,11 @@ def update(dt):
     angle_ball_teoric += angle_speed_ball
     ball.x = math.sin(angle_ball_real *  (3.14159 / 180)) * 275 + data.center_x
     ball.y = math.cos(angle_ball_real *  (3.14159 / 180)) * 275 + data.center_y
+
+    selector.rotation = angle_ball_real - bit_of_chance / 3
+
+    if selector.opacity != 0:
+        selector.opacity /= 1.1
 
     if not angle_speed_ball >= 0:
         angle_speed_ball -= deacceleration_ball
